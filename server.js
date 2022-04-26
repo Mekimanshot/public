@@ -2,17 +2,17 @@ const express = require('express');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const dbConnection = require('./database');
 const { body, validationResult } = require('express-validator');
-
-const app = express();
 const mysql = require('mysql2');
 const dbConnection = mysql.createPool({
     host: 'node31440-mekimantest.app.ruk-com.cloud',
     user: 'root',
     password:"TTAkcd93119",
     database:"project"
-});
+})
+const app = express();
+
+
 app.use(express.urlencoded({extended:false}));
 
 // SET OUR VIEWS AND VIEW ENGINE

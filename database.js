@@ -1,8 +1,8 @@
-const mysql = require('mysql2');
+/*const mysql = require('mysql2');
 const dbConnection = mysql.createPool({
-    host: 'node31440-mekimantest.app.ruk-com.cloud',
+    host: 'localhost',
     user: 'root',
-    password:"TTAkcd93119",
+    password:"",
     database:"project"
 }).promise()
-module.exports = dbConnection;
+module.exports = dbConnection;*/

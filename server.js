@@ -9,9 +9,9 @@ const { body, validationResult } = require('express-validator');
 const app = express();
 
 const con = mysql.createPool({
-    host: "node28648-nodenp.app.ruk-com.cloud",
+    host: "node31559-endows.app.ruk-com.cloud",
     user: "root",
-    password: "EFYdpe16742",
+    password: "MHYvsi76415",
     database: "project"
   });
 app.use(express.urlencoded({extended:false}));

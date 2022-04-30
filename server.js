@@ -3,17 +3,17 @@ const path = require('path');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
-//const dbConnection = require('./database');
+const dbConnection = require('./database');
 const { body, validationResult } = require('express-validator');
 
 const app = express();
 
-const con = mysql.createPool({
+/*const con = mysql.createPool({
     host: "node31559-endows.app.ruk-com.cloud",
     user: "root",
     password: "MHYvsi76415",
     database: "project"
-  });
+  });*/
 app.use(express.urlencoded({extended:false}));
 
 // SET OUR VIEWS AND VIEW ENGINE
@@ -40,6 +40,7 @@ const ifLoggedin = (req,res,next) => {
     }
     next();
 }
+
 // END OF CUSTOM MIDDLEWARE
 // ROOT PAGE
 app.get('/', ifNotLoggedin, (req,res,next) => {
@@ -55,6 +56,11 @@ app.get('/', ifNotLoggedin, (req,res,next) => {
 app.get('/register', (req, res, next) => {
     res.render('register')
   })
+  
+  app.get('/test2', (req, res, next) => {
+    res.render('test2')
+  })
+ 
  
   
   

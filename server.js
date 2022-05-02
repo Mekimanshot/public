@@ -57,8 +57,8 @@ app.get('/register', (req, res, next) => {
     res.render('register')
   })
   
-  app.get('/test2', (req, res, next) => {
-    res.render('test2')
+  app.get('/pro', (req, res, next) => {
+    res.render('pro',{name:req.session.user_name})
   })
  
  
@@ -81,18 +81,19 @@ app.post('/register', ifLoggedin,
         });
     }),
     body('user_name','Username is Empty!').trim().not().isEmpty(),
+    body('user_user','Student Id is Empty!').trim().not().isEmpty(),
     body('user_pass','The password must be of minimum length 6 characters').trim().isLength({ min: 6 }),
 ],// end of post data validation
 (req,res,next) => {
 
     const validation_result = validationResult(req);
-    const {user_name, user_pass, user_email} = req.body;
+    const {user_name, user_pass,user_user, user_email} = req.body;
     // IF validation_result HAS NO ERROR
     if(validation_result.isEmpty()){
         // password encryption (using bcryptjs)
         bcrypt.hash(user_pass, 12).then((hash_pass) => {
             // INSERTING USER INTO DATABASE
-            dbConnection.execute("INSERT INTO `users`(`name`,`email`,`password`) VALUES(?,?,?)",[user_name,user_email, hash_pass])
+            dbConnection.execute("INSERT INTO `users`(`name`,`email`,`user_id`,`password`) VALUES(?,?,?,?)",[user_name,user_email,user_user, hash_pass])
             .then(result => {
                 res.send(`your account has been created successfully, Now you can <a href="/">Login</a>`);
             }).catch(err => {
@@ -144,7 +145,7 @@ app.post('/', ifLoggedin, [
                 if(compare_result === true){
                     req.session.isLoggedIn = true;
                     req.session.userID = rows[0].id;
-
+                    req.session.user_name = rows[0].name;
                     res.redirect('/');
                 }
                 else{

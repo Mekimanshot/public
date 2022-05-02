@@ -4,6 +4,7 @@ const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
 const dbConnection = require('./database');
+const con = require('./database2');
 const { body, validationResult } = require('express-validator');
 const axios = require('axios');
 const app = express();
@@ -45,12 +46,13 @@ const ifLoggedin = (req,res,next) => {
 // END OF CUSTOM MIDDLEWARE
 // ROOT PAGE
 app.get('/', ifNotLoggedin, (req,res,next) => {
-    dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
-    .then(([rows]) => {
+    con.query("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID],(err,result) => {
         res.render('home',{
-            name:rows[0].name
+            name:result[0].name
         });
-    });
+    })
+       
+  
     
 });// END OF ROOT PAGE
 // ROOT PAGE
@@ -90,17 +92,12 @@ app.post('/register', ifLoggedin,
     const validation_result = validationResult(req);
     const {user_name, user_pass,user_user, user_email} = req.body;
     // IF validation_result HAS NO ERROR
-  
+
         // password encryption (using bcryptjs)
         bcrypt.hash(user_pass, 12).then((hash_pass) => {
             // INSERTING USER INTO DATABASE
-            dbConnection.execute("INSERT INTO `users`(`name`,`email`,`user_id`,`password`) VALUES(?,?,?,?)",[user_name,user_email,user_user, hash_pass])
-            .then(result => {
-                res.send(`your account has been created successfully, Now you can <a href="/">Login</a>`);
-            }).catch(err => {
-                // THROW INSERTING USER ERROR'S
-                if (err) throw err;
-            });
+            dbConnection.execute("INSERT INTO `users`(`user_id`, `name`, `email`, `password`) VALUES (?,?,?,?)",[user_user,user_name,user_email, hash_pass])
+           res.send(`<a href="/">Go to Home</a>`);
         })
         .catch(err => {
             // THROW HASING ERROR'S
@@ -114,55 +111,47 @@ app.post('/register', ifLoggedin,
 app.post('/', ifLoggedin, [
     body('user_email').custom((value) => {
         return dbConnection.execute('SELECT email FROM users WHERE email=?', [value])
-        .then(([rows]) => {
-            if(rows.length == 1){
-                return true;
-                
-            }
-            return Promise.reject('Invalid Email Address!');
-            
-        });
+            .then(([rows]) => {
+                if (rows.length == 1) {
+                    return true;
+
+                }
+                return Promise.reject('Invalid Email Address!');
+
+            });
     }),
-    body('user_pass','Password is empty!').trim().not().isEmpty(),
+    body('user_pass', 'Password is empty!').trim().not().isEmpty(),
 ], (req, res) => {
     const validation_result = validationResult(req);
-    const {user_pass, user_email} = req.body;
-    if(validation_result.isEmpty()){
+    const { user_pass, user_email } = req.body;
+    console.log(user_email, user_pass);
+     
+
+        con.query('SELECT * FROM users WHERE email=?', [user_email],(err,rows) => {
+            console.log(rows[0].name);
+            
+          
+                bcrypt.compare(user_pass, rows[0].password).then((result) => {
+                   
+                   if (result) {
+                       console.log('yes')
+                       req.session.isLoggedIn = true;
+                       req.session.userID = rows[0].id;
+                       req.session.user_name = rows[0].name;
+                       res.redirect('/');
+                   } 
+                   console.log(rows);
+               })
+               .catch(err => {
+                   if (err) throw err;
+               })
+           } 
+        )
         
-        dbConnection.execute("SELECT * FROM `users` WHERE `email`=?",[user_email])
-        .then(([rows]) => {
-            bcrypt.compare(user_pass, rows[0].password).then(compare_result => {
-                if(compare_result === true){
-                    req.session.isLoggedIn = true;
-                    req.session.userID = rows[0].id;
-                    req.session.user_name = rows[0].name;
-                    res.redirect('/');
-                }
-                else{
-                    res.render('index',{
-                        login_errors:['Invalid Password!']
-                    });
-                }
-            })
-            .catch(err => {
-                if (err) throw err;
-            });
-
-
-        }).catch(err => {
-            if (err) throw err;
-        });
-    }
-    else{
-        let allErrors = validation_result.errors.map((error) => {
-            return error.msg;
-        });
-        // REDERING index PAGE WITH LOGIN VALIDATION ERRORS
-        res.render('index',{
-            login_errors:allErrors
-        });
-    }
-});
+           
+    
+               
+    })
 // END OF LOGIN PAGE
 
 // LOGOUT
@@ -182,18 +171,13 @@ app.use('/', (req,res) => {
     res.status(404).send('<h1>404 Page Not Found!</h1>');
 });
 
-app.get('/showusers', (req,res,next) => {
-    dbConnection.query("SELECT * FROM `users`", (err, rows, fields) => {
-        if(!err){
-            res.send(rows);
-            console.log(rows);
-        }
-        else{
-            console.log(err);
-            console.log(fields);
-        }
+app.get("/showuser", (req, res) => {
+    con.query("SELECT * FROM users", (err, result) => {
+        if (err) return res.status(200).send(err);
+        else return res.status(200).send(result);
     })
-  
+
 })
 
-app.listen(3000, () => console.log("Server is Running..."));
+
+app.listen(11341, () => console.log("Server is Running..."));

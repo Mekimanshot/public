@@ -5,8 +5,9 @@ const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
 const dbConnection = require('./database');
 const { body, validationResult } = require('express-validator');
-
+const axios = require('axios');
 const app = express();
+const { redirect } = require('express/lib/response');
 
 /*const con = mysql.createPool({
     host: "node31559-endows.app.ruk-com.cloud",
@@ -89,7 +90,7 @@ app.post('/register', ifLoggedin,
     const validation_result = validationResult(req);
     const {user_name, user_pass,user_user, user_email} = req.body;
     // IF validation_result HAS NO ERROR
-    if(validation_result.isEmpty()){
+  
         // password encryption (using bcryptjs)
         bcrypt.hash(user_pass, 12).then((hash_pass) => {
             // INSERTING USER INTO DATABASE
@@ -105,18 +106,7 @@ app.post('/register', ifLoggedin,
             // THROW HASING ERROR'S
             if (err) throw err;
         })
-    }
-    else{
-        // COLLECT ALL THE VALIDATION ERRORS
-        let allErrors = validation_result.errors.map((error) => {
-            return error.msg;
-        });
-        // REDERING index PAGE WITH VALIDATION ERRORS
-        res.render('index',{
-            register_error:allErrors,
-            old_data:req.body
-        });
-    }
+    
 });// END OF REGISTER PAGE
 
 
@@ -192,6 +182,18 @@ app.use('/', (req,res) => {
     res.status(404).send('<h1>404 Page Not Found!</h1>');
 });
 
+app.get('/showusers', (req,res,next) => {
+    dbConnection.query("SELECT * FROM `users`", (err, rows, fields) => {
+        if(!err){
+            res.send(rows);
+            console.log(rows);
+        }
+        else{
+            console.log(err);
+            console.log(fields);
+        }
+    })
+  
+})
 
-
-app.listen(11346, () => console.log("Server is Running..."));
+app.listen(3000, () => console.log("Server is Running..."));

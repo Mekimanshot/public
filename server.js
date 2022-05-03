@@ -82,7 +82,12 @@ app.get("/showproduct", (req, res) => {
 })
 
 
+app.post('/deleteprofile', [body('name_user', '').trim().not().isEmpty(),], (req, res) => {
+    const { name_user } = req.body
+    dbConnection.execute("DELETE FROM `users` WHERE `name`=?", [name_user])
+    res.redirect('user')
 
+})
 
 
 // REGISTER PAGE
@@ -143,27 +148,29 @@ app.post('/', ifLoggedin, [
 
 
     con.query('SELECT * FROM users WHERE email=?', [user_email], (err, rows) => {
-        console.log(rows[0].name);
 
 
         bcrypt.compare(user_pass, rows[0].password).then((result) => {
             if (rows[0].rank == "admin") {
+                console.log('yes')
                 req.session.status = rows[0].rank;
                 req.session.userID = rows[0].id;
                 req.session.user_name = rows[0].name;
                 return res.render('admin', { name: req.session.user_name });
             }
             if (result) {
-                console.log('yes')
+                console.log('no')
                 req.session.isLoggedIn = true;
                 req.session.userID = rows[0].id;
                 req.session.user_name = rows[0].name;
-                res.redirect('/');
+                return res.redirect('/');
+                
             }
             console.log(rows);
         })
             .catch(err => {
                 if (err) throw err;
+                
             })
     }
     )
@@ -173,6 +180,21 @@ app.post('/', ifLoggedin, [
 
 })
 
+// END OF LOGIN PAGE
+app.get('/product', (req, res) => {
+    if (req.session.status == "admin") {
+        console.log('yes')
+        con.query("SELECT * FROM product",(err,rows) => {
+            console.log(rows);
+            res.render('product', {
+                name: req.session.user_name,
+                result: rows
+            });
+        })
+
+    }
+    console.log('no')
+})
 app.get('/user', (req, res) => {
     if (req.session.status == "admin") {
         console.log('yes')
@@ -191,7 +213,22 @@ app.get('/user', (req, res) => {
     }
     console.log('no')
 })
-// END OF LOGIN PAGE
+//get pro
+app.post('/addproducts', [
+    body('product_name', '').trim().not().isEmpty(),
+    body('product_stock', '').trim().not().isEmpty(),
+    body('product_image', '').trim().not().isEmpty(),
+], (req, res) => {
+
+    const { product_name, product_stock,product_id, product_image } = req.body
+    async function call() {
+        dbConnection.execute("INSERT INTO `product`(`product`, `stock`, `img`) VALUES (?,?,?)", [product_name, product_stock, product_image])
+    }
+    call()
+    res.redirect('product')
+
+})
+
 
 // LOGOUT
 app.get('/logout', (req, res) => {

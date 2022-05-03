@@ -5,21 +5,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <%- include('./css/style'); %>
+    <%- include('./css/style2'); %>
+     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 <body>
+    <%- include('tap3')%>
     <div class="container-lgx2" style="padding-top: 40px;min-height:360px;padding-bottom: 50px;">
 
-        <a href="register" class="btn btn-success">Add User</a>
-
-        <table class="table table-fit mt-5">
+        <table class="table table-fit mt-6">
             <thead>
                 <tr>
-                    <th scope="col">No.</th>
-                    <th scope="col">Username</th>
+                    <th scope="col">No</th>
+                    <th scope="col">User ID</th>
+                    <th scope="col">Name</th>
                     <th scope="col">Email</th>
-                    <th scope="col">Phone</th>
                     <th scope="col">Status</th>
-                    <th scope="col"></th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -28,6 +31,9 @@
                 <tr>
                     <td style="padding-top: 30px;">
                         <%= i+1 %>
+                    </td>
+                    <td style="padding-top: 30px;">
+                        <%= result[i].user_id %>
                     </td>
                     <td style="padding-top: 30px;">
                         <%= result[i].name %>
